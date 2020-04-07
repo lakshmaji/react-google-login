@@ -64,6 +64,7 @@ const useGoogleLogin = ({
   }
 
   useEffect(() => {
+    let unmounted = false; 
     loadScript(document, 'script', 'google-login', jsSrc, () => {
       const params = {
         client_id: clientId,
@@ -86,7 +87,7 @@ const useGoogleLogin = ({
         if (!window.gapi.auth2.getAuthInstance()) {
           window.gapi.auth2.init(params).then(
             res => {
-              setLoaded(true)
+              !unmounted && setLoaded(true)
               if (isSignedIn && res.isSignedIn.get()) {
                 handleSigninSuccess(res.currentUser.get())
               }
@@ -94,12 +95,13 @@ const useGoogleLogin = ({
             err => onFailure(err)
           )
         } else {
-          setLoaded(true)
+          !unmounted && setLoaded(true)
         }
       })
     })
 
     return () => {
+      unmounted = true;
       removeScript(document, 'google-login')
     }
   }, [])
